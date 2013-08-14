@@ -32,7 +32,7 @@ function! auto_pairs#insert(key) "{{{
       return "\<Right>"
     end
 
-    if !g:AutoPairsFlyMode
+    if !g:auto_pairs#fly_mode
       " Skip the character if next character is space
       if current_char == ' ' && next_char == a:key
         return "\<Right>\<Right>"
@@ -50,7 +50,7 @@ function! auto_pairs#insert(key) "{{{
     endif
 
     " Fly Mode, and the key is closed-pairs, search closed-pair and jump
-    if g:AutoPairsFlyMode && has_key(b:AutoPairsClosedPairs, a:key)
+    if g:auto_pairs#fly_mode && has_key(b:AutoPairsClosedPairs, a:key)
       if search(a:key, 'W')
         return "\<Right>"
       endif
@@ -96,7 +96,7 @@ function! auto_pairs#insert(key) "{{{
 
   " Keep quote number is odd.
   " Because quotes should be matched in the same line in most of situation
-  if g:AutoPairsSmartQuotes && open == close
+  if g:auto_pairs#smart_quotes && open == close
     " Remove \\ \" \'
     let cleaned_line = substitute(line, '\v(\\.)', '', 'g')
     let n = quotes_num
@@ -278,7 +278,7 @@ function! auto_pairs#return() "{{{
   let cmd = ''
   let cur_char = line[col('.')-1]
   if has_key(b:AutoPairs, prev_char) && b:AutoPairs[prev_char] == cur_char
-    if g:AutoPairsCenterLine && winline() * 3 >= winheight(0) * 2
+    if g:auto_pairs#center_line && winline() * 3 >= winheight(0) * 2
       " Use \<BS> instead of \<ESC>cl will cause the placeholder deleted
       " incorrect. because <C-O>zz won't leave Normal mode.
       " Use \<DEL> is a bit wierd. the character before cursor need to be deleted.
@@ -308,7 +308,7 @@ function! auto_pairs#space() "{{{
   let prev_char = line[col('.')-2]
   let cmd = ''
   let cur_char =line[col('.')-1]
-  if has_key(g:AutoPairsParens, prev_char) && g:AutoPairsParens[prev_char] == cur_char
+  if has_key(g:auto_pairs#parens, prev_char) && g:auto_pairs#parens[prev_char] == cur_char
     let cmd = "\<SPACE>\<LEFT>"
   endif
   return "\<SPACE>".cmd
@@ -330,7 +330,7 @@ function! auto_pairs#init() "{{{
   let b:AutoPairsClosedPairs = {}
 
   if !exists('b:AutoPairs')
-    let b:AutoPairs = g:AutoPairs
+    let b:AutoPairs = g:auto_pairs
   end
 
   " buffer level map pairs keys
@@ -343,13 +343,13 @@ function! auto_pairs#init() "{{{
   endfor
 
   " Still use <buffer> level mapping for <BS> <SPACE>
-  if g:auto_pairs#mapBS
+  if g:auto_pairs#map_bs
     " Use <C-R> instead of <expr> for issue #14 sometimes press BS output strange words
     execute 'inoremap <buffer> <silent> <BS> <C-R>=auto_pairs#delete()<CR>'
     execute 'inoremap <buffer> <silent> <C-H> <C-R>=auto_pairs#delete()<CR>'
   end
 
-  if g:auto_pairs#mapSpace
+  if g:auto_pairs#map_space
     " Try to respect abbreviations on a <SPACE>
     let do_abbrev = ""
     if v:version >= 703 && has("patch489")
@@ -358,23 +358,23 @@ function! auto_pairs#init() "{{{
     execute 'inoremap <buffer> <silent> <SPACE> '.do_abbrev.'<C-R>=auto_pairs#space()<CR>'
   end
 
-  if g:AutoPairsShortcutFastWrap != ''
-    execute 'inoremap <buffer> <silent> '.g:AutoPairsShortcutFastWrap.' <C-R>=auto_pairs#fast_wrap()<CR>'
+  if g:auto_pairs#shortcut_fast_wrap != ''
+    execute 'inoremap <buffer> <silent> '.g:auto_pairs#shortcut_fast_wrap.' <C-R>=auto_pairs#fast_wrap()<CR>'
   end
 
-  if g:AutoPairsShortcutBackInsert != ''
-    execute 'inoremap <buffer> <silent> '.g:AutoPairsShortcutBackInsert.' <C-R>=auto_pairs#back_insert()<CR>'
+  if g:auto_pairs#shortcut_back_insert != ''
+    execute 'inoremap <buffer> <silent> '.g:auto_pairs#shortcut_back_insert.' <C-R>=auto_pairs#back_insert()<CR>'
   end
 
-  if g:AutoPairsShortcutToggle != ''
+  if g:auto_pairs#shortcut_toggle != ''
     " use <expr> to ensure showing the status when toggle
-    execute 'inoremap <buffer> <silent> <expr> '.g:AutoPairsShortcutToggle.' auto_pairs#toggle()'
-    execute 'noremap <buffer> <silent> '.g:AutoPairsShortcutToggle.' :call auto_pairs#toggle()<CR>'
+    execute 'inoremap <buffer> <silent> <expr> '.g:auto_pairs#shortcut_toggle.' auto_pairs#toggle()'
+    execute 'noremap <buffer> <silent> '.g:auto_pairs#shortcut_toggle.' :call auto_pairs#toggle()<CR>'
   end
 
-  if g:AutoPairsShortcutJump != ''
-    execute 'inoremap <buffer> <silent> ' . g:AutoPairsShortcutJump. ' <ESC>:call auto_pairs#jump()<CR>a'
-    execute 'noremap <buffer> <silent> ' . g:AutoPairsShortcutJump. ' :call auto_pairs#jump()<CR>'
+  if g:auto_pairs#shortcut_jump != ''
+    execute 'inoremap <buffer> <silent> ' . g:auto_pairs#shortcut_jump. ' <ESC>:call auto_pairs#jump()<CR>a'
+    execute 'noremap <buffer> <silent> ' . g:auto_pairs#shortcut_jump. ' :call auto_pairs#jump()<CR>'
   end
 
 endfunction"}}}
@@ -403,7 +403,7 @@ function! auto_pairs#try_init() "{{{
   
   " Buffer level keys mapping
   " comptible with other plugin
-  if g:auto_pairs#mapCR
+  if g:auto_pairs#map_cr
     if v:version >= 703 && has('patch32')
       " VIM 7.3 supports advancer maparg which could get <expr> info
       " then auto-pairs could remap <CR> in any case.
@@ -441,7 +441,8 @@ function! auto_pairs#try_init() "{{{
         let old_cr = wrapper_name
       end
       " Always silent mapping
-      execute 'inoremap <script> <buffer> <silent> <CR> '.old_cr.'<SID>auto_pairs#return'
+
+      execute 'inoremap <script><buffer><silent><CR> '.old_cr.'<SID>auto_pairs#return'
     end
   endif
   call auto_pairs#init()
