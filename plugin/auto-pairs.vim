@@ -1,5 +1,5 @@
 " Insert or delete brackets, parens, quotes in pairs.
-" Maintainer:	JiangMiao <jiangfriend@gmail.com>
+" Maintainer:  JiangMiao <jiangfriend@gmail.com>
 " Contributor: camthompson, alpaca-tc
 " Last Change:  2013-08-14
 " Version: 1.3.3
