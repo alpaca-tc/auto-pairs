@@ -159,7 +159,7 @@ function! auto_pairs#delete() "{{{
   end
 
 
-  if has_key(b:AutoPairs, prev_char) 
+  if has_key(b:AutoPairs, prev_char)
     let close = b:AutoPairs[prev_char]
     if match(line,'^\s*'.close, col('.')-1) != -1
       " Delete (|___)
@@ -352,7 +352,7 @@ function! auto_pairs#init() "{{{
   if g:auto_pairs#map_space
     " Try to respect abbreviations on a <SPACE>
     let do_abbrev = ""
-    if v:version >= 703 && has("patch489")
+    if v:version == 703 && has('patch489') || v:version > 703
       let do_abbrev = "<C-]>"
     endif
     execute 'inoremap <buffer> <silent> <SPACE> '.do_abbrev.'<C-R>=auto_pairs#space()<CR>'
@@ -398,9 +398,9 @@ function! auto_pairs#try_init() "{{{
   " supertab doesn't support <SID>auto_pairs#return
   " when use <SID>auto_pairs#return  will cause Duplicated <CR>
   "
-  " and when load after vim-endwise will cause unexpected endwise inserted. 
+  " and when load after vim-endwise will cause unexpected endwise inserted.
   " so always load AutoPairs at last
-  
+
   " Buffer level keys mapping
   " comptible with other plugin
   if g:auto_pairs#map_cr
